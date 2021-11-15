@@ -27,6 +27,26 @@ x-environment:
   RABBITMQ_PASS: taiga
   # Telemetry settings
   ENABLE_TELEMETRY: "True"
+  # OpenID settings, see: https://github.com/daotl/taiga-contrib-openid-auth
+  # Enable OpenID to allow to register users if they do not exist. Set to false to disable all signups
+  PUBLIC_REGISTER_ENABLED: "True"
+
+x-openid-environment:
+  &openid-environment
+  # OpenID settings
+  ENABLE_OPENID: "True"
+  OPENID_URL : "https://{OpenID API Path}/auth"
+  OPENID_USER_URL : "https://{OpenID API Path}/userinfo"
+  OPENID_TOKEN_URL : "https://{OpenID API Path}/oauth2/token"
+  OPENID_CLIENT_ID : "<Client ID>"
+  OPENID_CLIENT_SECRET : "<Client Secret>"
+  OPENID_NAME: "Name you want to give your openid provider e.g keycloak"
+  # OpenID optional settings
+  # OPENID_ID_FIELD = "sub"
+  # OPENID_USERNAME_FIELD = "preferred_username"
+  # OPENID_FULLNAME_FIELD = "name"
+  # OPENID_EMAIL_FIELD = "email"
+  # OPENID_SCOPE="openid email"
 
 x-volumes:
   &default-back-volumes
@@ -37,7 +57,7 @@ x-volumes:
 
 services:
   taiga-db:
-    image: postgres:12.3
+    image: postgres:13.5
     environment:
       POSTGRES_DB: taiga
       POSTGRES_USER: taiga
@@ -48,8 +68,10 @@ services:
       - taiga
 
   taiga-back:
-    image: taigaio/taiga-back:latest
-    environment: *default-back-environment
+    image: daotl/taiga-back-openid:6.4.2
+    environment:
+      <<: *default-back-environment
+      <<: *openid-environment
     volumes: *default-back-volumes
     networks:
       - taiga
@@ -59,9 +81,11 @@ services:
       - taiga-async-rabbitmq
 
   taiga-async:
-    image: taigaio/taiga-back:latest
+    image: daotl/taiga-back-openid:6.4.2
     entrypoint: ["/taiga-back/docker/async_entrypoint.sh"]
-    environment: *default-back-environment
+    environment:
+      <<: *default-back-environment
+      <<: *openid-environment
     volumes: *default-back-volumes
     networks:
       - taiga
@@ -83,8 +107,9 @@ services:
       - taiga
 
   taiga-front:
-    image: taigaio/taiga-front:latest
+    image: daotl/taiga-front-openid:6.4.2
     environment:
+      <<: *openid-environment
       TAIGA_URL: "http://localhost:9000"
       TAIGA_WEBSOCKETS_URL: "ws://localhost:9000"
       TAIGA_SUBPATH: "" # "" or "/subpath"
@@ -94,7 +119,7 @@ services:
     #   - ./conf.json:/usr/share/nginx/html/conf.json
 
   taiga-events:
-    image: taigaio/taiga-events:latest
+    image: taigaio/taiga-events:6.4.0
     environment:
       RABBITMQ_USER: taiga
       RABBITMQ_PASS: taiga
@@ -117,7 +142,7 @@ services:
       - taiga
 
   taiga-protected:
-    image: taigaio/taiga-protected:latest
+    image: taigaio/taiga-protected:6.4.0
     environment:
       MAX_AGE: 360
       SECRET_KEY: "taiga-back-secret-key"
@@ -125,7 +150,7 @@ services:
       - taiga
 
   taiga-gateway:
-    image: nginx:1.19-alpine
+    image: nginx:1.21-alpine
     ports:
       - "9000:80"
     volumes:
@@ -141,10 +166,30 @@ services:
 
 volumes:
   taiga-static-data:
+    driver_opts:
+      type: none
+      device: ${TAIGA_VOLUMES_ROOT}/static
+      o: bind
   taiga-media-data:
+    driver_opts:
+      type: none
+      device: ${TAIGA_VOLUMES_ROOT}/media
+      o: bind
   taiga-db-data:
+    driver_opts:
+      type: none
+      device: ${TAIGA_VOLUMES_ROOT}/postgres
+      o: bind
   taiga-async-rabbitmq-data:
+    driver_opts:
+      type: none
+      device: ${TAIGA_VOLUMES_ROOT}/async-rabbitmq
+      o: bind
   taiga-events-rabbitmq-data:
+    driver_opts:
+      type: none
+      device: ${TAIGA_VOLUMES_ROOT}/events-rabbitmq
+      o: bind
 
 networks:
   taiga:

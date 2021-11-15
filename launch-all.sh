@@ -7,4 +7,6 @@
 # Copyright (c) 2021-present Kaleidos Ventures SL
 
 set -x
-exec docker-compose -f docker-compose.yml -f docker-compose.penpot.yml up -d $@
+TAIGA_VOLUMES_ROOT=/data/docker/volumes/taiga \
+  PENPOT_VOLUMES_ROOT=/data/docker/volumes/penpot \
+  exec docker-compose -f docker-compose.yml -f docker-compose.penpot.yml up -d $@
