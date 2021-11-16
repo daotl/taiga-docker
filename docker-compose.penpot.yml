@@ -8,6 +8,8 @@ version: "3.5"
 
 networks:
   penpot:
+  web:
+    external: true
 
 volumes:
   penpot_postgres_data:
@@ -24,8 +26,6 @@ volumes:
 services:
   penpot-frontend:
     image: "penpotapp/frontend:1.10.0-beta"
-    ports:
-      - 9001:80
 
     volumes:
       - penpot_assets_data:/opt/data
@@ -39,6 +39,16 @@ services:
 
     networks:
       - penpot
+      - web
+
+    expose:
+      - 80
+
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.penpot.entryPoints: web
+      traefik.http.routers.penpot.tls.certResolver: default
+      traefik.http.routers.penpot.rule: Host(`penpot.example.com`)
 
   penpot-backend:
     image: "penpotapp/backend:1.10.0-beta"
@@ -60,7 +70,7 @@ services:
     environment:
       # Don't touch it; this uses internal docker network to
       # communicate with the frontend.
-      - PENPOT_PUBLIC_URI=http://penpot-frontend
+      - PENPOT_PUBLIC_URI=https://penpot-frontend
     networks:
       - penpot
 

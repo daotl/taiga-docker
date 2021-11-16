@@ -9,8 +9,8 @@ x-environment:
   POSTGRES_HOST: taiga-db
   # Taiga settings
   TAIGA_SECRET_KEY: "taiga-back-secret-key"
-  TAIGA_SITES_SCHEME: "http"
-  TAIGA_SITES_DOMAIN: "localhost:9000"
+  TAIGA_SITES_SCHEME: "https"
+  TAIGA_SITES_DOMAIN: "taiga.example.com"
   TAIGA_SUBPATH: "" # "" or "/subpath"
   # Email settings. Uncomment following lines and configure your SMTP server
   # EMAIL_BACKEND: "django.core.mail.backends.smtp.EmailBackend"
@@ -110,8 +110,8 @@ services:
     image: daotl/taiga-front-openid:6.4.2
     environment:
       <<: *openid-environment
-      TAIGA_URL: "http://localhost:9000"
-      TAIGA_WEBSOCKETS_URL: "ws://localhost:9000"
+      TAIGA_URL: "https://example.com"
+      TAIGA_WEBSOCKETS_URL: "wss://example.com"
       TAIGA_SUBPATH: "" # "" or "/subpath"
     networks:
       - taiga
@@ -151,18 +151,24 @@ services:
 
   taiga-gateway:
     image: nginx:1.21-alpine
-    ports:
-      - "9000:80"
     volumes:
       - ./taiga-gateway/taiga.conf:/etc/nginx/conf.d/default.conf
       - taiga-static-data:/taiga/static
       - taiga-media-data:/taiga/media
     networks:
       - taiga
+      - web
+    expose:
+      - 80
     depends_on:
       - taiga-front
       - taiga-back
       - taiga-events
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.taiga.entryPoints: web
+      traefik.http.routers.taiga.tls.certResolver: default
+      traefik.http.routers.taiga.rule: Host(`taiga.example.com`)
 
 volumes:
   taiga-static-data:
@@ -193,3 +199,5 @@ volumes:
 
 networks:
   taiga:
+  web:
+    external: true
