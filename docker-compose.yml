@@ -35,18 +35,18 @@ x-openid-environment:
   &openid-environment
   # OpenID settings
   ENABLE_OPENID: "True"
-  OPENID_URL : "https://{OpenID API Path}/auth"
-  OPENID_USER_URL : "https://{OpenID API Path}/userinfo"
-  OPENID_TOKEN_URL : "https://{OpenID API Path}/oauth2/token"
-  OPENID_CLIENT_ID : "<Client ID>"
-  OPENID_CLIENT_SECRET : "<Client Secret>"
+  OPENID_URL: "https://{OpenID API Path}/auth"
+  OPENID_USER_URL: "https://{OpenID API Path}/userinfo"
+  OPENID_TOKEN_URL: "https://{OpenID API Path}/oauth2/token"
+  OPENID_CLIENT_ID: "<Client ID>"
+  OPENID_CLIENT_SECRET: "<Client Secret>"
   OPENID_NAME: "Name you want to give your openid provider e.g keycloak"
   # OpenID optional settings
-  # OPENID_ID_FIELD = "sub"
-  # OPENID_USERNAME_FIELD = "preferred_username"
-  # OPENID_FULLNAME_FIELD = "name"
-  # OPENID_EMAIL_FIELD = "email"
-  # OPENID_SCOPE="openid email"
+  # OPENID_ID_FIELD: "sub"
+  # OPENID_USERNAME_FIELD: "preferred_username"
+  # OPENID_FULLNAME_FIELD: "name"
+  # OPENID_EMAIL_FIELD: "email"
+  # OPENID_SCOPE: "openid email"
 
 x-volumes:
   &default-back-volumes
