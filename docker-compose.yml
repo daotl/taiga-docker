@@ -110,6 +110,7 @@ services:
     image: daotl/taiga-front-openid:6.4.2
     environment:
       <<: *openid-environment
+      ENABLE_OPENID: "true" # Override "True" intended for Python
       TAIGA_URL: "https://example.com"
       TAIGA_WEBSOCKETS_URL: "wss://example.com"
       TAIGA_SUBPATH: "" # "" or "/subpath"
